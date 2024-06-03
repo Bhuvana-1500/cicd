@@ -7,6 +7,15 @@ terraform {
   }
 }
 
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "CICDpipelines-rg"
+    storage_account_name = "sacicdp"
+    container_name       = "cicdcon"
+    key                  = "terraform.tfstate"
+  }
+}
+
 provider "azurerm" {
   skip_provider_registration = true
   features {}  # Include at least one "features" block
