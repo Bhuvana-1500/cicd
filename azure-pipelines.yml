@@ -1,0 +1,66 @@
+stages:
+  - stage: validate
+    jobs:
+    - job: validate
+      continueOnError: false
+      steps:
+      - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+        displayName: install
+        inputs:
+          terraformVersion: 'latest'
+      - task: TerraformTaskV4@4
+        displayName: init
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          backendServiceArm: 'Bhuvaneswari Mungara – MPN(13ba43d9-3859-4c70-9f8d-182debaa038b)'
+          backendAzureRmResourceGroupName: 'CICDpipelines-rg'
+          backendAzureRmStorageAccountName: 'sacicdp'
+          backendAzureRmContainerName: 'cicdcon'
+          backendAzureRmKey: 'terraform.tfstate'
+      - task: TerraformTaskV4@4
+        displayName: validate
+        inputs:
+          provider: 'azurerm'
+          command: 'validate'
+  - stage: deploy
+    jobs:
+      - deployment: deploy_terraform
+        continueOnError: false
+        environment: 'dev'
+        strategy:
+         runOnce:
+           deploy:
+             steps:
+               - checkout: self
+               - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@1
+                 displayName: install
+                 inputs:
+                   terraformVersion: 'latest'
+               - task: TerraformTaskV4@4
+                 displayName: init
+                 inputs:
+                  provider: 'azurerm'
+                  command: 'init'
+                  backendServiceArm: 'Bhuvaneswari Mungara – MPN(13ba43d9-3859-4c70-9f8d-182debaa038b)'
+                  backendAzureRmResourceGroupName: 'CICDpipelines-rg'
+                  backendAzureRmStorageAccountName: 'sacicdp'
+                  backendAzureRmContainerName: 'cicdcon'
+                  backendAzureRmKey: 'terraform.tfstate'
+               - task: TerraformTaskV4@4
+                 displayName: plan
+                 inputs:
+                   provider: 'azurerm'
+                   command: 'plan'
+                   environmentServiceNameAzureRM: 'Bhuvaneswari Mungara – MPN(13ba43d9-3859-4c70-9f8d-182debaa038b)'
+               - task: TerraformTaskV4@4
+                 displayName: validate
+                 inputs:
+                   provider: 'azurerm'
+                   command: 'validate'
+               - task: TerraformTaskV4@4
+                 displayName: apply
+                 inputs:
+                   provider: 'azurerm'
+                   command: 'apply'
+                   environmentServiceNameAzureRM: 'Bhuvaneswari Mungara – MPN(13ba43d9-3859-4c70-9f8d-182debaa038b)'
